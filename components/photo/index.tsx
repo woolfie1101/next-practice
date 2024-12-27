@@ -10,7 +10,7 @@ export default function PhotoDisplay({ photoData }: Props) {
   return (
     <div className="flex flex-col gap-4 w-64 mx-auto">
       <h1 className="text-3xl text-center">{photoData.title}</h1>
-      <Link href={`/photo/${photoData.id}`}>
+      <Link href={`/photo/${photoData.id}`} scroll={false}>
         <div className="border-2 rounded-xl overflow-hidden w-64 h-64 relative">
           <Image
             src={photoData.path}
