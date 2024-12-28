@@ -3,14 +3,13 @@ import PhotoDisplay from "@/components/photo";
 import { getImage } from "@/data/images";
 import { PhotoData } from "@/types/photo-data";
 
-interface Props {
-  params: Promise<{
+type Props = {
+  params: {
     photoId: string;
-  }>;
-}
+  };
+};
 
-const Photo = async ({ params }: Props) => {
-  const { photoId } = await params;
+export default async function Photo({ params: { photoId } }: Props) {
   const image: PhotoData = await getImage(photoId);
 
   if (!image?.id) {
@@ -22,6 +21,4 @@ const Photo = async ({ params }: Props) => {
       <PhotoDisplay photoData={image} />
     </Modal>
   );
-};
-
-export default Photo;
+}
