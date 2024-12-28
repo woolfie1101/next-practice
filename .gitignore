@@ -41,3 +41,6 @@ yarn-error.log*
 .cache/
 **/.cache/
 .next/cache/
+
+# 특정 컴포넌트 디렉토리 제외
+/components/ui/*
