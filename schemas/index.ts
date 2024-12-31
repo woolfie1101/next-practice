@@ -41,3 +41,12 @@ export const EditPageDescriptionSchema = z.object({
   }),
   pageId: z.string(),
 });
+
+export const EditCategorySchema = z.object({
+  categoryId: z.string(),
+  pageId: z.string(),
+});
+
+export const CreateCategorySchema = z.object({
+  pageId: z.string(),
+});

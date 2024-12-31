@@ -5,6 +5,7 @@ import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
   CreateAdminPageSchema,
+  EditCategorySchema,
   EditPageDescriptionSchema,
   EditPageTitleSchema,
 } from "@/schemas";
@@ -170,4 +171,45 @@ export const editImageUrlPage = async (values: FormData) => {
   revalidatePath(`/admin/${pageId}`);
 
   return { success: "수정 성공했습니다", imageUrl };
+};
+
+export const editCategoryPage = async (
+  values: z.infer<typeof EditCategorySchema>
+) => {
+  const user = await currentUser();
+  if (!user || !user.id) {
+    await signOut({ redirectTo: "/login", redirect: true });
+    return;
+  }
+
+  const validatedFields = EditCategorySchema.safeParse(values);
+
+  if (!validatedFields.success) {
+    return { error: "Invalid fields!" };
+  }
+
+  const { categoryId, pageId } = validatedFields.data;
+
+  const page = await db.page.findUnique({
+    where: {
+      id: pageId,
+    },
+  });
+
+  if (!page) {
+    return { error: "잘못된 정보입니다." };
+  }
+
+  await db.page.update({
+    where: {
+      id: page.id,
+    },
+    data: {
+      categoryId,
+    },
+  });
+
+  revalidatePath(`/admin/${pageId}`);
+
+  return { success: "수정 성공했습니다" };
 };

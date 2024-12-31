@@ -1,8 +1,10 @@
 import { TitleForm } from "@/components/dashboard/admin/title-form";
+import { CategoryForm } from "@/components/dashboard/course/category-form";
 import { ImageForm } from "@/components/dashboard/course/image-form";
 import { DescriptionForm } from "@/components/dashboard/description-form";
 import { IconBadge } from "@/components/icon-badge";
 import { getPage } from "@/data/admin";
+import { getCategories } from "@/data/category";
 import { LayoutDashboard } from "lucide-react";
 import { redirect } from "next/navigation";
 
@@ -17,6 +19,8 @@ const PageIdPage = async ({ params }: Props) => {
   if (!page) {
     redirect("/admin");
   }
+
+  const categories = await getCategories();
 
   const requiredFields = [
     page?.title,
@@ -50,6 +54,14 @@ const PageIdPage = async ({ params }: Props) => {
           <TitleForm initalData={page} pageId={page.id} />
           <DescriptionForm initalData={page} pageId={page.id} />
           <ImageForm initalData={page} pageId={page.id} />
+          <CategoryForm
+            initalData={page}
+            pageId={page.id}
+            options={categories.map((category) => ({
+              label: category.name,
+              value: category.id,
+            }))}
+          />
         </div>
       </div>
     </div>
