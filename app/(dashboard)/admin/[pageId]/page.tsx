@@ -1,7 +1,8 @@
 import { TitleForm } from "@/components/dashboard/admin/title-form";
+import { DescriptionForm } from "@/components/dashboard/description-form";
 import { IconBadge } from "@/components/icon-badge";
 import { getPage } from "@/data/admin";
-import { LayoutDashboard, Apple } from "lucide-react";
+import { LayoutDashboard } from "lucide-react";
 import { redirect } from "next/navigation";
 
 interface Props {
@@ -42,10 +43,11 @@ const PageIdPage = async ({ params }: Props) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-16">
         <div>
           <div className="flex items-center gap-x-2">
-            <IconBadge icon={Apple} variant="success" />
+            <IconBadge icon={LayoutDashboard} />
             <h2 className="text-xl">설정하세요</h2>
           </div>
           <TitleForm initalData={page} pageId={page.id} />
+          <DescriptionForm initalData={page} pageId={page.id} />
         </div>
       </div>
     </div>

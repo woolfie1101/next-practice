@@ -29,8 +29,15 @@ export const CreateAdminPageSchema = z.object({
 });
 
 export const EditPageTitleSchema = z.object({
-  title: z.string().min(1,{
-    message: "제목을 입력하세요."
+  title: z.string().min(1, {
+    message: "제목을 입력하세요.",
+  }),
+  pageId: z.string(),
+});
+
+export const EditPageDescriptionSchema = z.object({
+  description: z.string().min(1, {
+    message: "설명을 입력하세요.",
   }),
   pageId: z.string(),
 });
