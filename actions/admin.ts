@@ -8,7 +8,9 @@ import {
   EditPageDescriptionSchema,
   EditPageTitleSchema,
 } from "@/schemas";
+import { writeFile } from "fs/promises";
 import { revalidatePath } from "next/cache";
+import { join } from "path";
 import * as z from "zod";
 
 export const createPage = async (
@@ -117,4 +119,55 @@ export const editDescriptionPage = async (
   revalidatePath(`/admin/${pageId}`);
 
   return { success: "제목 수정 성공했습니다" };
+};
+
+export const editImageUrlPage = async (values: FormData) => {
+  const user = await currentUser();
+  if (!user || !user.id) {
+    await signOut({ redirectTo: "/login", redirect: true });
+    return;
+  }
+
+  const file: File | null = values.get("file") as unknown as File;
+  const pageId: string | null = values.get("pageId") as unknown as string;
+
+  if (!file) {
+    return { error: "파일이 없습니다" };
+  }
+
+  const page = await db.page.findUnique({
+    where: {
+      id: pageId,
+    },
+  });
+
+  if (!page) {
+    return { error: "잘못된 정보입니다." };
+  }
+
+  const bytes = await file.arrayBuffer();
+  const buffer = Buffer.from(bytes);
+
+  // 확장자 검사하고 fileid 별도로 만들면 좋겠지만 이건 연습용
+  const imageFilePath = join(
+    process.cwd(),
+    "public",
+    "images",
+    page.id + ".png"
+  );
+  await writeFile(imageFilePath, buffer, { flag: "w" }); //flag: "w" 는 파일이 이미 존재하면 덮어쓰기
+  const imageUrl = `/images/${page.id}.png`;
+
+  await db.page.update({
+    where: {
+      id: page.id,
+    },
+    data: {
+      imageUrl,
+    },
+  });
+
+  revalidatePath(`/admin/${pageId}`);
+
+  return { success: "수정 성공했습니다", imageUrl };
 };

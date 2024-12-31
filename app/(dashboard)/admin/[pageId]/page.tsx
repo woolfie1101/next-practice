@@ -1,4 +1,5 @@
 import { TitleForm } from "@/components/dashboard/admin/title-form";
+import { ImageForm } from "@/components/dashboard/course/image-form";
 import { DescriptionForm } from "@/components/dashboard/description-form";
 import { IconBadge } from "@/components/icon-badge";
 import { getPage } from "@/data/admin";
@@ -48,6 +49,7 @@ const PageIdPage = async ({ params }: Props) => {
           </div>
           <TitleForm initalData={page} pageId={page.id} />
           <DescriptionForm initalData={page} pageId={page.id} />
+          <ImageForm initalData={page} pageId={page.id} />
         </div>
       </div>
     </div>
