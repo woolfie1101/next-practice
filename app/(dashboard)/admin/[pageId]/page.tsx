@@ -5,7 +5,7 @@ import { DescriptionForm } from "@/components/dashboard/description-form";
 import { IconBadge } from "@/components/icon-badge";
 import { getPage } from "@/data/admin";
 import { getCategories } from "@/data/category";
-import { LayoutDashboard } from "lucide-react";
+import { CircleDollarSign, LayoutDashboard, ListChecks } from "lucide-react";
 import { redirect } from "next/navigation";
 
 interface Props {
@@ -63,6 +63,22 @@ const PageIdPage = async ({ params }: Props) => {
             }))}
           />
         </div>
+        <div className="space-y-6">
+          <div>
+            <div className="flex items-center gap-x-2">
+              <IconBadge icon={ListChecks} />
+              <h2 className="text-xl">아이템</h2>
+            </div>
+            <div>아이템 정보</div>
+          </div>
+          <div>
+            <div className="flex items-center gap-x-2">
+              <IconBadge icon={CircleDollarSign} />
+              <h2 className="text-xl">가격</h2>
+            </div>
+          </div>
+        </div>
+        {/* 2 bit columns end */}
       </div>
     </div>
   );

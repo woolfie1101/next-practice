@@ -50,3 +50,8 @@ export const EditCategorySchema = z.object({
 export const CreateCategorySchema = z.object({
   pageId: z.string(),
 });
+
+export const EditPriceSchema = z.object({
+  price: z.coerce.number(),
+  pageId: z.string(),
+});

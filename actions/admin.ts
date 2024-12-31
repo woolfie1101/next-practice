@@ -8,6 +8,7 @@ import {
   EditCategorySchema,
   EditPageDescriptionSchema,
   EditPageTitleSchema,
+  EditPriceSchema,
 } from "@/schemas";
 import { writeFile } from "fs/promises";
 import { revalidatePath } from "next/cache";
@@ -206,6 +207,45 @@ export const editCategoryPage = async (
     },
     data: {
       categoryId,
+    },
+  });
+
+  revalidatePath(`/admin/${pageId}`);
+
+  return { success: "수정 성공했습니다" };
+};
+
+export const editPrice = async (values: z.infer<typeof EditPriceSchema>) => {
+  const user = await currentUser();
+  if (!user || !user.id) {
+    await signOut({ redirectTo: "/login", redirect: true });
+    return;
+  }
+
+  const validatedFields = EditPriceSchema.safeParse(values);
+
+  if (!validatedFields.success) {
+    return { error: "Invalid fields!" };
+  }
+
+  const { price, pageId } = validatedFields.data;
+
+  const page = await db.page.findUnique({
+    where: {
+      id: pageId,
+    },
+  });
+
+  if (!page) {
+    return { error: "잘못된 정보입니다." };
+  }
+
+  await db.page.update({
+    where: {
+      id: page.id,
+    },
+    data: {
+      price,
     },
   });
 
