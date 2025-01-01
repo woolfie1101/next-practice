@@ -55,3 +55,8 @@ export const EditPriceSchema = z.object({
   price: z.coerce.number(),
   pageId: z.string(),
 });
+
+export const ItemTitleSchema = z.object({
+  title: z.string(),
+  pageId: z.string(),
+});

@@ -1,6 +1,8 @@
+import { ItemsForm } from "@/components/dashboard/admin/item-form";
 import { TitleForm } from "@/components/dashboard/admin/title-form";
 import { CategoryForm } from "@/components/dashboard/course/category-form";
 import { ImageForm } from "@/components/dashboard/course/image-form";
+import { PriceForm } from "@/components/dashboard/course/price-form";
 import { DescriptionForm } from "@/components/dashboard/description-form";
 import { IconBadge } from "@/components/icon-badge";
 import { getPage } from "@/data/admin";
@@ -28,6 +30,7 @@ const PageIdPage = async ({ params }: Props) => {
     page?.imageUrl,
     page?.price,
     page?.categoryId,
+    page.items.some((item) => item.isPublished),
   ];
 
   const totalFields = requiredFields.length;
@@ -63,19 +66,21 @@ const PageIdPage = async ({ params }: Props) => {
             }))}
           />
         </div>
+        {/* 2 bit columns */}
         <div className="space-y-6">
           <div>
             <div className="flex items-center gap-x-2">
               <IconBadge icon={ListChecks} />
               <h2 className="text-xl">아이템</h2>
             </div>
-            <div>아이템 정보</div>
+            <ItemsForm initalData={page} pageId={page.id} />
           </div>
           <div>
             <div className="flex items-center gap-x-2">
               <IconBadge icon={CircleDollarSign} />
               <h2 className="text-xl">가격</h2>
             </div>
+            <PriceForm initalData={page} pageId={page.id} />
           </div>
         </div>
         {/* 2 bit columns end */}

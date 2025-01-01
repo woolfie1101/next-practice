@@ -15,6 +15,13 @@ export const getPage = async (id: string) => {
     where: {
       id,
     },
+    include: {
+      items: {
+        orderBy: {
+          position: "asc",
+        },
+      },
+    },
   });
 
   // if (!page) {
