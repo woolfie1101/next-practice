@@ -59,7 +59,7 @@ export const createItem = async (values: z.infer<typeof ItemTitleSchema>) => {
 
   revalidatePath(`/admin/${pageId}`);
 
-  return { success: "추가했습니다" };
+  return { success: "추가했습니다", item };
 };
 
 export const reorderItems = async (

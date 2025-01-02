@@ -39,6 +39,7 @@ interface ItemsFormProps {
 export const ItemsForm = ({ initalData, pageId }: ItemsFormProps) => {
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [itemLists, setItemLists] = useState(initalData.items);
 
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -63,6 +64,7 @@ export const ItemsForm = ({ initalData, pageId }: ItemsFormProps) => {
             form.reset();
             toogleCreating();
             router.refresh();
+            setItemLists([...itemLists, data.item]);
             toast(data.success);
           }
         })
@@ -157,14 +159,14 @@ export const ItemsForm = ({ initalData, pageId }: ItemsFormProps) => {
         <div
           className={cn(
             "text-sm mt-2",
-            !initalData.items.length && "text-slate-500 italic"
+            !itemLists.length && "text-slate-500 italic"
           )}
         >
-          {!initalData.items.length && "아이템이 없습니다."}
+          {!itemLists.length && "아이템이 없습니다."}
           <ItemList
             onEdit={onEdit}
             onReorder={onReorder}
-            items={initalData.items || []}
+            items={itemLists || []}
           />
         </div>
       )}
