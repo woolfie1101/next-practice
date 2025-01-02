@@ -1,7 +1,10 @@
 "use client";
 
-import { editTitleItem } from "@/actions/item";
+import { editAccessItem, editDescriptionItem } from "@/actions/item";
+import { Editor } from "@/components/editor";
+import { Preview } from "@/components/preview";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -10,7 +13,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { EditItemTitleSchema } from "@/schemas";
+import { cn } from "@/lib/utils";
+import { EditItemAccessSchema, EditItemDescriptionSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -19,36 +23,37 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
-interface ItemTitleFormProps {
+interface ItemAccessFormProps {
   initalData: {
-    title: string;
+    isFree: boolean;
   };
   pageId: string;
   itemId: string;
 }
 
-export const ItemTitleForm = ({
+export const ItemAccessForm = ({
   initalData,
   pageId,
   itemId,
-}: ItemTitleFormProps) => {
+}: ItemAccessFormProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [title, setTitle] = useState(initalData.title);
+  const [isFree, setIsFree] = useState(initalData.isFree);
+
   const router = useRouter();
 
-  const form = useForm<z.infer<typeof EditItemTitleSchema>>({
-    resolver: zodResolver(EditItemTitleSchema),
+  const form = useForm<z.infer<typeof EditItemAccessSchema>>({
+    resolver: zodResolver(EditItemAccessSchema),
     defaultValues: {
-      title,
+      isFree: !!isFree,
       pageId,
       itemId,
     },
   });
 
-  const onSubmit = (values: z.infer<typeof EditItemTitleSchema>) => {
+  const onSubmit = (values: z.infer<typeof EditItemAccessSchema>) => {
     startTransition(() => {
-      editTitleItem(values)
+      editAccessItem(values)
         .then((data) => {
           if (data?.error) {
             form.reset();
@@ -60,8 +65,8 @@ export const ItemTitleForm = ({
             router.refresh();
             toast(data.success);
           }
-          setTitle(values.title);
-          form.setValue("title", values.title);
+          setIsFree(values.isFree);
+          form.setValue("isFree", values.isFree);
         })
         .catch(() => {
           toast("알수없는 문제가 발생했습니다.");
@@ -74,7 +79,7 @@ export const ItemTitleForm = ({
   return (
     <div className="mt-6 border bg-slate-100 rounded-md p-4">
       <div className="font-medium flex items-center justify-between">
-        제목
+        세부 내용
         <Button onClick={toogleEdit} variant="ghost">
           {isEditing ? (
             <>취소</>
@@ -86,7 +91,16 @@ export const ItemTitleForm = ({
           )}
         </Button>
       </div>
-      {!isEditing && <p className="text-sm mt-2">{title}</p>}
+      {!isEditing && (
+        <p
+          className={cn(
+            "text-sm mt-2 whitespace-pre-wrap",
+            !isFree && "text-slate-500 italic"
+          )}
+        >
+          {!isFree ? "공개 중입니다." : "허용된 사람만 접근 가능합니다."}
+        </p>
+      )}
       {isEditing && (
         <Form {...form}>
           <form
@@ -95,11 +109,15 @@ export const ItemTitleForm = ({
           >
             <FormField
               control={form.control}
-              name="title"
+              name="isFree"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input disabled={isPending} placeholder="제목" {...field} />
+                    <Checkbox
+                      disabled={isPending}
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

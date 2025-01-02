@@ -68,3 +68,17 @@ export const EditItemTitleSchema = z.object({
   pageId: z.string(),
   itemId: z.string(),
 });
+
+export const EditItemDescriptionSchema = z.object({
+  description: z.string().min(1, {
+    message: "설명을 입력하세요.",
+  }),
+  pageId: z.string(),
+  itemId: z.string(),
+});
+
+export const EditItemAccessSchema = z.object({
+  isFree: z.boolean().default(false),
+  pageId: z.string(),
+  itemId: z.string(),
+});

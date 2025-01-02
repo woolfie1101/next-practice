@@ -1,6 +1,7 @@
 "use client";
 
-import { editTitleItem } from "@/actions/item";
+import { editDescriptionItem } from "@/actions/item";
+import { Editor } from "@/components/editor";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -10,7 +11,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { EditItemTitleSchema } from "@/schemas";
+import { cn } from "@/lib/utils";
+import { EditItemDescriptionSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -19,36 +21,36 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
-interface ItemTitleFormProps {
+interface ItemDescriptionFormProps {
   initalData: {
-    title: string;
+    description: string | null;
   };
   pageId: string;
   itemId: string;
 }
 
-export const ItemTitleForm = ({
+export const ItemDescriptionForm = ({
   initalData,
   pageId,
   itemId,
-}: ItemTitleFormProps) => {
+}: ItemDescriptionFormProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [title, setTitle] = useState(initalData.title);
+  const [description, setDescription] = useState(initalData.description || "");
   const router = useRouter();
 
-  const form = useForm<z.infer<typeof EditItemTitleSchema>>({
-    resolver: zodResolver(EditItemTitleSchema),
+  const form = useForm<z.infer<typeof EditItemDescriptionSchema>>({
+    resolver: zodResolver(EditItemDescriptionSchema),
     defaultValues: {
-      title,
+      description,
       pageId,
       itemId,
     },
   });
 
-  const onSubmit = (values: z.infer<typeof EditItemTitleSchema>) => {
+  const onSubmit = (values: z.infer<typeof EditItemDescriptionSchema>) => {
     startTransition(() => {
-      editTitleItem(values)
+      editDescriptionItem(values)
         .then((data) => {
           if (data?.error) {
             form.reset();
@@ -60,8 +62,8 @@ export const ItemTitleForm = ({
             router.refresh();
             toast(data.success);
           }
-          setTitle(values.title);
-          form.setValue("title", values.title);
+          setDescription(values.description);
+          form.setValue("description", values.description);
         })
         .catch(() => {
           toast("알수없는 문제가 발생했습니다.");
@@ -74,7 +76,7 @@ export const ItemTitleForm = ({
   return (
     <div className="mt-6 border bg-slate-100 rounded-md p-4">
       <div className="font-medium flex items-center justify-between">
-        제목
+        세부 내용
         <Button onClick={toogleEdit} variant="ghost">
           {isEditing ? (
             <>취소</>
@@ -86,7 +88,16 @@ export const ItemTitleForm = ({
           )}
         </Button>
       </div>
-      {!isEditing && <p className="text-sm mt-2">{title}</p>}
+      {!isEditing && (
+        <p
+          className={cn(
+            "text-sm mt-2 whitespace-pre-wrap",
+            !description && "text-slate-500 italic"
+          )}
+        >
+          {description || "설명이 없습니다."}
+        </p>
+      )}
       {isEditing && (
         <Form {...form}>
           <form
@@ -95,11 +106,11 @@ export const ItemTitleForm = ({
           >
             <FormField
               control={form.control}
-              name="title"
+              name="description"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input disabled={isPending} placeholder="제목" {...field} />
+                    <Editor disabled={isPending} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -1,4 +1,3 @@
-import { ItemAccessForm } from "@/components/dashboard/item/item-access-form";
 import { ItemDescriptionForm } from "@/components/dashboard/item/item-description-form";
 import { ItemTitleForm } from "@/components/dashboard/item/item-title-form";
 import { IconBadge } from "@/components/icon-badge";
@@ -66,7 +65,6 @@ const ItemIdPage = async ({ params }: Props) => {
               <IconBadge icon={Eye} />
               <h2 className="text-xl">접근 설정</h2>
             </div>
-            <ItemAccessForm initalData={item} pageId={pageId} itemId={itemId} />
           </div>
         </div>
       </div>

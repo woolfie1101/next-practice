@@ -3,7 +3,12 @@
 import { signOut } from "@/auth";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { ItemTitleSchema } from "@/schemas";
+import {
+  EditItemAccessSchema,
+  EditItemDescriptionSchema,
+  EditItemTitleSchema,
+  ItemTitleSchema,
+} from "@/schemas";
 import { revalidatePath } from "next/cache";
 import * as z from "zod";
 
@@ -87,4 +92,135 @@ export const reorderItems = async (
   revalidatePath(`/admin/${pageId}`);
 
   return { success: "순서 조정 완료" };
+};
+
+export const editTitleItem = async (
+  values: z.infer<typeof EditItemTitleSchema>
+) => {
+  const user = await currentUser();
+  if (!user || !user.id) {
+    await signOut({ redirectTo: "/login", redirect: true });
+    return;
+  }
+
+  const validatedFields = EditItemTitleSchema.safeParse(values);
+
+  if (!validatedFields.success) {
+    return { error: "Invalid fields!" };
+  }
+
+  const { title, pageId, itemId } = validatedFields.data;
+
+  const item = await db.item.findUnique({
+    where: {
+      id: itemId,
+      pageId,
+    },
+  });
+
+  if (!item) {
+    return { error: "잘못된 정보입니다." };
+  }
+
+  await db.item.update({
+    where: {
+      id: itemId,
+      pageId,
+    },
+    data: {
+      title: title,
+    },
+  });
+
+  revalidatePath(`/admin/${pageId}`);
+  revalidatePath(`/admin/${pageId}/items/${itemId}`);
+
+  return { success: "성공했습니다" };
+};
+
+export const editDescriptionItem = async (
+  values: z.infer<typeof EditItemDescriptionSchema>
+) => {
+  const user = await currentUser();
+  if (!user || !user.id) {
+    await signOut({ redirectTo: "/login", redirect: true });
+    return;
+  }
+
+  const validatedFields = EditItemDescriptionSchema.safeParse(values);
+
+  if (!validatedFields.success) {
+    return { error: "Invalid fields!" };
+  }
+
+  const { description, pageId, itemId } = validatedFields.data;
+
+  const item = await db.item.findUnique({
+    where: {
+      id: itemId,
+      pageId,
+    },
+  });
+
+  if (!item) {
+    return { error: "잘못된 정보입니다." };
+  }
+
+  await db.item.update({
+    where: {
+      id: itemId,
+      pageId,
+    },
+    data: {
+      description,
+    },
+  });
+
+  revalidatePath(`/admin/${pageId}`);
+  revalidatePath(`/admin/${pageId}/items/${itemId}`);
+
+  return { success: "수정 성공했습니다" };
+};
+
+export const editAccessItem = async (
+  values: z.infer<typeof EditItemAccessSchema>
+) => {
+  const user = await currentUser();
+  if (!user || !user.id) {
+    await signOut({ redirectTo: "/login", redirect: true });
+    return;
+  }
+
+  const validatedFields = EditItemAccessSchema.safeParse(values);
+
+  if (!validatedFields.success) {
+    return { error: "Invalid fields!" };
+  }
+
+  const { isFree, pageId, itemId } = validatedFields.data;
+
+  const item = await db.item.findUnique({
+    where: {
+      id: itemId,
+      pageId,
+    },
+  });
+
+  if (!item) {
+    return { error: "잘못된 정보입니다." };
+  }
+
+  await db.item.update({
+    where: {
+      id: item.id,
+      pageId,
+    },
+    data: {
+      isFree,
+    },
+  });
+
+  revalidatePath(`/admin/${pageId}/items/${itemId}`);
+
+  return { success: "수정 성공했습니다" };
 };
