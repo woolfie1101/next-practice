@@ -9,9 +9,11 @@ import {
   EditPageDescriptionSchema,
   EditPageTitleSchema,
   EditPriceSchema,
+  PageSchema,
 } from "@/schemas";
 import { writeFile } from "fs/promises";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { join } from "path";
 import * as z from "zod";
 
@@ -37,6 +39,8 @@ export const createPage = async (
       userId: user.id,
     },
   });
+
+  revalidatePath(`/admin/${page.id}`);
 
   return { success: "생성 성공했습니다", pageId: page.id };
 };
@@ -120,7 +124,7 @@ export const editDescriptionPage = async (
 
   revalidatePath(`/admin/${pageId}`);
 
-  return { success: "제목 수정 성공했습니다" };
+  return { success: "수정 성공했습니다" };
 };
 
 export const editImageUrlPage = async (values: FormData) => {
@@ -157,7 +161,7 @@ export const editImageUrlPage = async (values: FormData) => {
     "images",
     page.id + ".png"
   );
-  await writeFile(imageFilePath, buffer, { flag: "w" }); //flag: "w" 는 파일이 이미 존재하면 덮어쓰기
+  await writeFile(imageFilePath, buffer, { flag: "w" });
   const imageUrl = `/images/${page.id}.png`;
 
   await db.page.update({
@@ -252,4 +256,137 @@ export const editPrice = async (values: z.infer<typeof EditPriceSchema>) => {
   revalidatePath(`/admin/${pageId}`);
 
   return { success: "수정 성공했습니다" };
+};
+
+export const deletePage = async (values: z.infer<typeof PageSchema>) => {
+  const user = await currentUser();
+  if (!user || !user.id) {
+    await signOut({ redirectTo: "/login", redirect: true });
+    return;
+  }
+
+  const validatedFields = PageSchema.safeParse(values);
+
+  if (!validatedFields.success) {
+    return { error: "Invalid fields!" };
+  }
+
+  const { pageId } = validatedFields.data;
+
+  const page = await db.page.findUnique({
+    where: {
+      id: pageId,
+      userId: user.id,
+    },
+  });
+
+  if (!page) {
+    return { error: " 잘못된 정보입니다." };
+  }
+
+  await db.page.delete({
+    where: {
+      id: pageId,
+    },
+  });
+
+  revalidatePath("/admin/home");
+  redirect("/admin/home");
+
+  return { success: "삭제 했습니다" };
+};
+
+export const publishPage = async (values: z.infer<typeof PageSchema>) => {
+  const user = await currentUser();
+  if (!user || !user.id) {
+    await signOut({ redirectTo: "/login", redirect: true });
+    return;
+  }
+
+  const validatedFields = PageSchema.safeParse(values);
+
+  if (!validatedFields.success) {
+    return { error: "Invalid fields!" };
+  }
+
+  const { pageId } = validatedFields.data;
+
+  const page = await db.page.findUnique({
+    where: {
+      id: pageId,
+      userId: user.id,
+    },
+    include: {
+      items: true,
+    },
+  });
+
+  if (!page) {
+    return { error: "잘못된 정보입니다." };
+  }
+
+  const hasPublishedItems = page.items.some((item) => item.isPublished);
+
+  if (
+    !page.title ||
+    !page.description ||
+    !page.imageUrl ||
+    !page.categoryId ||
+    !hasPublishedItems
+  ) {
+    return { error: "입력 정보가 부족합니다." };
+  }
+
+  await db.page.update({
+    where: {
+      id: page.id,
+    },
+    data: {
+      isPublished: true,
+    },
+  });
+
+  revalidatePath(`/admin/${pageId}`);
+
+  return { success: "게시 했습니다" };
+};
+
+export const unpublishPage = async (values: z.infer<typeof PageSchema>) => {
+  const user = await currentUser();
+  if (!user || !user.id) {
+    await signOut({ redirectTo: "/login", redirect: true });
+    return;
+  }
+
+  const validatedFields = PageSchema.safeParse(values);
+
+  if (!validatedFields.success) {
+    return { error: "Invalid fields!" };
+  }
+
+  const { pageId } = validatedFields.data;
+
+  const page = await db.page.findUnique({
+    where: {
+      id: pageId,
+      userId: user.id,
+    },
+  });
+
+  if (!page) {
+    return { error: "잘못된 정보입니다." };
+  }
+
+  await db.page.update({
+    where: {
+      id: page.id,
+    },
+    data: {
+      isPublished: false,
+    },
+  });
+
+  revalidatePath(`/admin/${pageId}`);
+
+  return { success: "게시 했습니다" };
 };

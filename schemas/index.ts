@@ -87,3 +87,7 @@ export const ItemSchema = z.object({
   pageId: z.string(),
   itemId: z.string(),
 });
+
+export const PageSchema = z.object({
+  pageId: z.string(),
+});
