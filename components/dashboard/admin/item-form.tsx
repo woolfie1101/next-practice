@@ -18,7 +18,7 @@ import {
   ItemTitleSchema,
 } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pencil, PlusCircle } from "lucide-react";
+import { Loader2, Pencil, PlusCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
@@ -26,7 +26,7 @@ import { toast } from "sonner";
 import { Item } from "@prisma/client";
 
 import * as z from "zod";
-import { createItem } from "@/actions/item";
+import { createItem, reorderItems } from "@/actions/item";
 import { ItemList } from "./item-list";
 
 interface ItemsFormProps {
@@ -80,8 +80,35 @@ export const ItemsForm = ({ initalData, pageId }: ItemsFormProps) => {
     setIsUpdating(() => !isUpdating);
   };
 
+  const onReorder = (updateData: { id: string; position: number }[]) => {
+    startTransition(() => {
+      setIsUpdating(true);
+      reorderItems(pageId, updateData)
+        .then((data) => {
+          if (data?.error) {
+            toast(data.error);
+          }
+          if (data?.success) {
+            router.refresh();
+            toast(data.success);
+          }
+          setIsUpdating(false);
+        })
+        .catch((e) => {
+          console.log(e);
+          toast("알수없는 문제가 발생했습니다.");
+          setIsUpdating(false);
+        });
+    });
+  };
+
   return (
-    <div className="mt-6 border bg-slate-100 rounded-md p-4">
+    <div className="relative mt-6 border bg-slate-100 rounded-md p-4">
+      {isPending && (
+        <div className="absolute h-full w-full bg-slate-500/20 top-0 right-0 rounded-m flex items-center justify-center">
+          <Loader2 className="animate-spin h-6 w-6 text-sky-700" />
+        </div>
+      )}
       <div className="font-medium flex items-center justify-between">
         아이템
         <Button onClick={toogleCreating} variant="ghost">
@@ -132,7 +159,7 @@ export const ItemsForm = ({ initalData, pageId }: ItemsFormProps) => {
           {!initalData.items.length && "아이템이 없습니다."}
           <ItemList
             onEdit={() => {}}
-            onReorder={() => {}}
+            onReorder={onReorder}
             items={initalData.items || []}
           />
         </div>

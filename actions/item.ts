@@ -55,3 +55,36 @@ export const createItem = async (values: z.infer<typeof ItemTitleSchema>) => {
 
   return { success: "추가했습니다" };
 };
+
+export const reorderItems = async (
+  pageId: string,
+  updateData: { id: string; position: number }[]
+) => {
+  const user = await currentUser();
+  if (!user || !user.id) {
+    await signOut({ redirectTo: "/login", redirect: true });
+    return;
+  }
+
+  const course = await db.page.findUnique({
+    where: {
+      id: pageId,
+    },
+  });
+
+  if (!course) {
+    return { error: "잘못된 정보입니다." };
+  }
+
+  for (const item of updateData) {
+    console.log({ item });
+    await db.item.update({
+      where: { id: item.id },
+      data: { position: item.position },
+    });
+  }
+
+  revalidatePath(`/admin/${pageId}`);
+
+  return { success: "순서 조정 완료" };
+};
