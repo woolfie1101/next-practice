@@ -7,6 +7,7 @@ import {
   EditItemAccessSchema,
   EditItemDescriptionSchema,
   EditItemTitleSchema,
+  ItemSchema,
   ItemTitleSchema,
 } from "@/schemas";
 import { revalidatePath } from "next/cache";
@@ -223,4 +224,61 @@ export const editAccessItem = async (
   revalidatePath(`/admin/${pageId}/items/${itemId}`);
 
   return { success: "수정 성공했습니다" };
+};
+
+export const deleteItem = async (values: z.infer<typeof ItemSchema>) => {
+  const user = await currentUser();
+  if (!user || !user.id) {
+    await signOut({ redirectTo: "/login", redirect: true });
+    return;
+  }
+
+  const validatedFields = ItemSchema.safeParse(values);
+
+  if (!validatedFields.success) {
+    return { error: "Invalid fields!" };
+  }
+
+  const { pageId, itemId } = validatedFields.data;
+
+  const item = await db.item.findUnique({
+    where: {
+      id: itemId,
+      pageId,
+    },
+  });
+
+  if (!item) {
+    return { error: "잘못된 정보입니다." };
+  }
+
+  await db.item.delete({
+    where: {
+      id: item.id,
+      pageId,
+    },
+  });
+
+  const publishedItemInPage = await db.item.findMany({
+    where: {
+      pageId,
+      isPublished: true,
+    },
+  });
+
+  if (!publishedItemInPage.length) {
+    await db.page.update({
+      where: {
+        id: pageId,
+      },
+      data: {
+        isPublished: false,
+      },
+    });
+  }
+
+  revalidatePath(`/admin/${pageId}`);
+  revalidatePath(`/admin/${pageId}/items/${itemId}`);
+
+  return { success: "삭제했습니다." };
 };
