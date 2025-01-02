@@ -1,12 +1,12 @@
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { columns } from "@/components/dashboard/pages/column";
+import { DataTable } from "@/components/dashboard/pages/data-table";
+import { getPagesByCreator } from "@/data/page";
 
-const AdminPage = () => {
+const AdminPage = async () => {
+  const data = await getPagesByCreator();
   return (
     <div className="p-6">
-      <Link href="/admin/create">
-        <Button>생성</Button>
-      </Link>
+      <DataTable columns={columns} data={data} />
     </div>
   );
 };
