@@ -282,3 +282,105 @@ export const deleteItem = async (values: z.infer<typeof ItemSchema>) => {
 
   return { success: "삭제했습니다." };
 };
+
+export const publishItem = async (values: z.infer<typeof ItemSchema>) => {
+  const user = await currentUser();
+  if (!user || !user.id) {
+    await signOut({ redirectTo: "/login", redirect: true });
+    return;
+  }
+
+  const validatedFields = ItemSchema.safeParse(values);
+
+  if (!validatedFields.success) {
+    return { error: "Invalid fields!" };
+  }
+
+  const { pageId, itemId } = validatedFields.data;
+
+  const item = await db.item.findUnique({
+    where: {
+      id: itemId,
+      pageId,
+    },
+  });
+
+  if (!item) {
+    return { error: "잘못된 정보입니다." };
+  }
+
+  await db.item.update({
+    where: {
+      id: item.id,
+      pageId,
+    },
+    data: {
+      isPublished: true,
+    },
+  });
+
+  revalidatePath(`/admin/${pageId}`);
+  revalidatePath(`/admin/${pageId}/items/${itemId}`);
+
+  return { success: "게시했습니다." };
+};
+
+export const unpublishItem = async (values: z.infer<typeof ItemSchema>) => {
+  const user = await currentUser();
+  if (!user || !user.id) {
+    await signOut({ redirectTo: "/login", redirect: true });
+    return;
+  }
+
+  const validatedFields = ItemSchema.safeParse(values);
+
+  if (!validatedFields.success) {
+    return { error: "Invalid fields!" };
+  }
+
+  const { pageId, itemId } = validatedFields.data;
+
+  const item = await db.item.findUnique({
+    where: {
+      id: itemId,
+      pageId,
+    },
+  });
+
+  if (!item) {
+    return { error: "잘못된 정보입니다." };
+  }
+
+  await db.item.update({
+    where: {
+      id: item.id,
+      pageId,
+    },
+    data: {
+      isPublished: false,
+    },
+  });
+
+  const publishedItemsInPage = await db.item.findMany({
+    where: {
+      pageId,
+      isPublished: true,
+    },
+  });
+
+  if (!publishedItemsInPage.length) {
+    await db.page.update({
+      where: {
+        id: pageId,
+      },
+      data: {
+        isPublished: false,
+      },
+    });
+  }
+
+  revalidatePath(`/admin/${pageId}`);
+  revalidatePath(`/admin/${pageId}/items/${itemId}`);
+
+  return { success: "게시 취소했습니다." };
+};

@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteItem } from "@/actions/item";
+import { deleteItem, publishItem, unpublishItem } from "@/actions/item";
 import { ConfirmModal } from "@/components/modals/confirm-modal";
 import { Button } from "@/components/ui/button";
 import { Trash } from "lucide-react";
@@ -23,6 +23,46 @@ export const ItemActions = ({
 }: ItemActionsProps) => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+
+  const onClick = () => {
+    const values = {
+      pageId,
+      itemId,
+    };
+    if (isPublished) {
+      startTransition(() => {
+        unpublishItem(values)
+          .then((data) => {
+            if (data?.error) {
+              toast(data.error);
+            }
+            if (data?.success) {
+              toast(data.success);
+              router.refresh();
+            }
+          })
+          .catch(() => {
+            toast("알수없는 문제가 발생했습니다.");
+          });
+      });
+    } else {
+      startTransition(() => {
+        publishItem(values)
+          .then((data) => {
+            if (data?.error) {
+              toast(data.error);
+            }
+            if (data?.success) {
+              toast(data.success);
+              router.refresh();
+            }
+          })
+          .catch(() => {
+            toast("알수없는 문제가 발생했습니다.");
+          });
+      });
+    }
+  };
 
   const onDelete = () => {
     const values = {
@@ -50,8 +90,8 @@ export const ItemActions = ({
   return (
     <div className="flex items-center gap-x-2">
       <Button
-        onClick={() => {}}
-        disabled={disabled || isPending}
+        onClick={onClick}
+        disabled={isPending}
         variant="outline"
         size="sm"
       >
