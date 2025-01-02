@@ -3,7 +3,7 @@ import { ItemDescriptionForm } from "@/components/dashboard/item/item-descriptio
 import { ItemTitleForm } from "@/components/dashboard/item/item-title-form";
 import { IconBadge } from "@/components/icon-badge";
 import { getItem } from "@/data/item";
-import { ArrowLeft, Eye, LayoutDashboard } from "lucide-react";
+import { ArrowLeft, Eye, LayoutDashboard, Video } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -67,6 +67,12 @@ const ItemIdPage = async ({ params }: Props) => {
               <h2 className="text-xl">접근 설정</h2>
             </div>
             <ItemAccessForm initalData={item} pageId={pageId} itemId={itemId} />
+          </div>
+        </div>
+        <div>
+          <div className="flex items-center gap-x-2">
+            <IconBadge icon={Video} />
+            <h2 className="text-xl">오른쪽 공간 활용</h2>
           </div>
         </div>
       </div>
