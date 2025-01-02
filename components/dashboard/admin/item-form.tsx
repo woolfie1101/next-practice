@@ -102,6 +102,10 @@ export const ItemsForm = ({ initalData, pageId }: ItemsFormProps) => {
     });
   };
 
+  const onEdit = (id: string) => {
+    router.push(`/admin/${pageId}/items/${id}`);
+  };
+
   return (
     <div className="relative mt-6 border bg-slate-100 rounded-md p-4">
       {isPending && (
@@ -158,7 +162,7 @@ export const ItemsForm = ({ initalData, pageId }: ItemsFormProps) => {
         >
           {!initalData.items.length && "아이템이 없습니다."}
           <ItemList
-            onEdit={() => {}}
+            onEdit={onEdit}
             onReorder={onReorder}
             items={initalData.items || []}
           />

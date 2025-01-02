@@ -60,3 +60,11 @@ export const ItemTitleSchema = z.object({
   title: z.string(),
   pageId: z.string(),
 });
+
+export const EditItemTitleSchema = z.object({
+  title: z.string().min(1, {
+    message: "제목을 입력하세요.",
+  }),
+  pageId: z.string(),
+  itemId: z.string(),
+});
