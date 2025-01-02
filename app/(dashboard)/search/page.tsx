@@ -1,7 +1,9 @@
-const SearchPage = () => {
-  return (
-    <div>검색</div>
-  )
-}
+import { getCategories } from "@/data/category";
 
-export default SearchPage
+const SearchPage = async () => {
+  const categories = await getCategories();
+
+  return <div className="p-6">카테고리</div>;
+};
+
+export default SearchPage;
