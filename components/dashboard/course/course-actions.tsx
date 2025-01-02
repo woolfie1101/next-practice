@@ -91,7 +91,7 @@ export const PageActions = ({
     <div className="flex items-center gap-x-2">
       <Button
         onClick={onClick}
-        disabled={isPending}
+        disabled={disabled || isPending}
         variant="outline"
         size="sm"
       >

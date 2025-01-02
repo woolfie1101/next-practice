@@ -4,6 +4,7 @@ import { SessionProvider } from "next-auth/react";
 import { Toaster } from "@/components/ui/sonner";
 
 import "./globals.css";
+import { ConfettiProvider } from "@/components/providers/confetti-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,10 +23,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-  // modal,
 }: Readonly<{
   children: React.ReactNode;
-  modal: React.ReactNode;
 }>) {
   return (
     <SessionProvider>
@@ -33,9 +32,9 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          {/* {modal} */}
           {children}
           <Toaster />
+          <ConfettiProvider />
         </body>
       </html>
     </SessionProvider>
