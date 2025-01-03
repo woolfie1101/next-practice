@@ -1,4 +1,6 @@
 import { Banner } from "@/components/banner";
+import { PageProgressButton } from "@/components/dashboard/search/page-progress-button";
+import { EnrollButton } from "@/components/page/page-enroll-button";
 import { getPageForUser } from "@/data/page";
 
 const ItemIdPage = async ({
@@ -30,11 +32,14 @@ const ItemIdPage = async ({
         <div className="p-4 flex flex-col md:flex-row items-center justify-center">
           <h2 className="text-2xl font-semibold mb-2">{item.title}</h2>
           {purchase ? (
-            <div></div>
+            <PageProgressButton
+              itemId={itemId}
+              pageId={pageId}
+              nextItemId={nextItem?.id}
+              isCompleted={!!userProgress?.isComplete}
+            />
           ) : (
-            // 진행상태
-            <div></div>
-            // 신청버튼
+            <EnrollButton pageId={pageId} />
           )}
         </div>
       </div>

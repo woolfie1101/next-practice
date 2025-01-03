@@ -384,3 +384,40 @@ export const unpublishItem = async (values: z.infer<typeof ItemSchema>) => {
 
   return { success: "게시 취소했습니다." };
 };
+
+export const itemProgress = async (
+  pageId: string,
+  itemId: string,
+  isComplete: boolean
+) => {
+  const user = await currentUser();
+  if (!user || !user.id) {
+    await signOut({ redirectTo: "/login", redirect: true });
+    return { error: "권한이 없습니다." };
+  }
+
+  if (!pageId || !itemId) {
+    return { error: "입력 정보가 잘못되었습니다." };
+  }
+
+  await db.userProgress.upsert({
+    where: {
+      userId_itemId: {
+        userId: user.id,
+        itemId,
+      },
+    },
+    update: {
+      isComplete,
+    },
+    create: {
+      userId: user.id,
+      itemId,
+      isComplete,
+    },
+  });
+
+  revalidatePath(`/page/${pageId}/item/${itemId}`);
+
+  return { success: "업데이트했습니다." };
+};
