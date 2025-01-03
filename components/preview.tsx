@@ -11,10 +11,14 @@ interface PreviewProps {
 
 export const Preview = ({ value }: PreviewProps) => {
   // const ReactQuill = useMemo(() => dynamic(() => import("react-quill-new"), {ssr: false}),[]);
-  const ReactQuill = dynamic(() => import("react-quill-new"), {
-    ssr: false,
-    loading: () => <p>로딩중</p>,
-  });
+  const ReactQuill = useMemo(
+    () =>
+      dynamic(() => import("react-quill-new").then((e) => e.default), {
+        ssr: false,
+        loading: () => null,
+      }),
+    []
+  );
 
   return <ReactQuill theme="bubble" value={value} readOnly />;
 };
