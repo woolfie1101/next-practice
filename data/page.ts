@@ -3,7 +3,9 @@
 import { signOut } from "@/auth";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { Category, Page, Purchase } from "@prisma/client";
 import { redirect } from "next/navigation";
+import { getProgress } from "./progress";
 
 export const getPage = async (id: string) => {
   const user = await currentUser();
@@ -52,4 +54,74 @@ export const getPagesByCreator = async () => {
   });
 
   return pages || [];
+};
+
+interface getItemsBySearchProps {
+  title?: string;
+  categoryId?: string;
+}
+
+export type ItemsBySearchResult = Page & {
+  category: Category | null;
+  items: { id: string }[];
+  progress: number | null;
+  purchases: Purchase[];
+};
+
+export const getPagesBySearch = async ({
+  title,
+  categoryId,
+}: getItemsBySearchProps): Promise<ItemsBySearchResult[]> => {
+  const user = await currentUser();
+  if (!user) {
+    return await signOut({ redirectTo: "/login", redirect: true });
+  }
+  const pages = await db.page.findMany({
+    where: {
+      isPublished: true,
+      title: {
+        contains: title,
+      },
+      categoryId,
+    },
+    include: {
+      category: true,
+      items: {
+        where: {
+          isPublished: true,
+        },
+        select: {
+          id: true,
+        },
+      },
+      purchases: {
+        where: {
+          userId: user.id,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  const pagesWithProgress = await Promise.all(
+    pages.map(async (page) => {
+      if (page.purchases.length === 0) {
+        return {
+          ...page,
+          progress: null,
+        };
+      }
+
+      const progressPercentage = await getProgress(page.id);
+
+      return {
+        ...page,
+        progress: progressPercentage || null,
+      };
+    })
+  );
+
+  return pagesWithProgress;
 };

@@ -2,6 +2,7 @@
 
 import { editDescriptionItem } from "@/actions/item";
 import { Editor } from "@/components/editor";
+import { Preview } from "@/components/preview";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -89,14 +90,15 @@ export const ItemDescriptionForm = ({
         </Button>
       </div>
       {!isEditing && (
-        <p
+        <div
           className={cn(
             "text-sm mt-2 whitespace-pre-wrap",
             !description && "text-slate-500 italic"
           )}
         >
-          {description || "설명이 없습니다."}
-        </p>
+          {!description && "설명이 없습니다."}
+          {description && <Preview value={description} />}
+        </div>
       )}
       {isEditing && (
         <Form {...form}>
