@@ -3,7 +3,7 @@
 import { signOut } from "@/auth";
 import { currentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { Category, Page, Purchase } from "@prisma/client";
+import { Category, Item, Page, Purchase } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { getProgress } from "./progress";
 
@@ -160,4 +160,79 @@ export const getPageByPageId = async (id: string) => {
   }
 
   return page;
+};
+
+export const getPageForUser = async (pageId: string, itemId: string) => {
+  const user = await currentUser();
+  if (!user || !user.id) {
+    return await signOut({ redirectTo: "/login", redirect: true });
+  }
+
+  const purchase = await db.purchase.findUnique({
+    where: {
+      userId_pageId: {
+        userId: user.id,
+        pageId,
+      },
+    },
+  });
+
+  const page = await db.page.findUnique({
+    where: {
+      isPublished: true,
+      id: pageId,
+    },
+    select: {
+      price: true,
+    },
+  });
+
+  const item = await db.item.findUnique({
+    where: {
+      id: itemId,
+      isPublished: true,
+    },
+  });
+
+  if (!page) {
+    redirect("/");
+  }
+
+  if (!item) {
+    redirect("/");
+  }
+
+  let nextItem: Item | null = null;
+
+  if (item.isFree || purchase) {
+    nextItem = await db.item.findFirst({
+      where: {
+        pageId,
+        isPublished: true,
+        position: {
+          gt: item?.position,
+        },
+      },
+      orderBy: {
+        position: "asc",
+      },
+    });
+  }
+
+  const userProgress = await db.userProgress.findUnique({
+    where: {
+      userId_itemId: {
+        userId: user.id,
+        itemId,
+      },
+    },
+  });
+
+  return {
+    item,
+    page,
+    nextItem,
+    userProgress,
+    purchase,
+  };
 };

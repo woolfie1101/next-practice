@@ -1,4 +1,6 @@
+import { getPurchaseByPageId } from "@/data/purchase";
 import { Item, Page, UserProgress } from "@prisma/client";
+import { PageSidebarItem } from "./page-sidebar-item";
 
 interface PagesSidebarProps {
   page: Page & {
@@ -9,7 +11,12 @@ interface PagesSidebarProps {
   progressCount: number;
 }
 
-export const PagesSidebar = ({ page, progressCount }: PagesSidebarProps) => {
+export const PagesSidebar = async ({
+  page,
+  progressCount,
+}: PagesSidebarProps) => {
+  const purchase = await getPurchaseByPageId(page.id);
+
   return (
     <div className="h-full border-r flex flex-col overflow-y-auto shadow-sm">
       <div className="p-8 flex flex-col border-b">
@@ -18,7 +25,14 @@ export const PagesSidebar = ({ page, progressCount }: PagesSidebarProps) => {
       </div>
       <div className="flex flex-col w-full">
         {page.items.map((item) => (
-          <div key={item.id}>{item.title}</div>
+          <PageSidebarItem
+            key={item.id}
+            id={item.id}
+            label={item.title}
+            isCompleted={!!item.userProgress?.[0]?.isComplete}
+            pageId={page.id}
+            isLocked={!item.isFree && !purchase}
+          />
         ))}
       </div>
     </div>
