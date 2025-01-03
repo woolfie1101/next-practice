@@ -125,3 +125,39 @@ export const getPagesBySearch = async ({
 
   return pagesWithProgress;
 };
+
+export const getPageByPageId = async (id: string) => {
+  const user = await currentUser();
+  if (!user) {
+    return await signOut({ redirectTo: "/login", redirect: true });
+  }
+
+  const page = await db.page.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      items: {
+        where: {
+          isPublished: true,
+        },
+        include: {
+          userProgress: {
+            where: {
+              userId: user.id,
+            },
+          },
+        },
+        orderBy: {
+          position: "asc",
+        },
+      },
+    },
+  });
+
+  if (!page) {
+    redirect("/search");
+  }
+
+  return page;
+};
